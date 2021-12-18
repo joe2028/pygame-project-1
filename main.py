@@ -3,13 +3,18 @@ import os
 import time
 from random import *
 
-#egg = Actor('rene')
-bird = Actor('bird')
-WIDTH = 500
-HEIGHT = 500
-bird.center
+TITLE = 'Mutated Flappy Bird'
+
+egg = Actor('rene', (20, 5))
+gap = 140
+bird = Actor('bird', (75, 350))
+WIDTH = 400
+HEIGHT = 708
 score = 0
 game_over = False
+
+top_pipe = Actor('top', (300, 0))
+bottom_pipe = Actor('bottom', (300, top_pipe.height + gap))
 
 pipe_1_x = 100
 pipe_1_space_y = 100
@@ -18,63 +23,84 @@ pipe_2_x = 200
 pipe_2_space_y = 200
 
 bird_y = 200
-bird_y_speed = 0
-
 
 
 def update(dt):
-    global bird_y, bird_y_speed
+    global bird_y, bird_y_speed, scroll_speed
     bird_y += 30 * dt
     bird_y_speed += 516 * dt
     bird_y += bird_y_speed * dt
     bird_y = int(bird_y)
-    if bird_y <= 0:
+    scroll_speed = -2
+    top_pipe.x += scroll_speed
+    bottom_pipe.x += scroll_speed
+
+    offset = randint(-150, 200)
+
+    if top_pipe.x < -20:
+        #top_pipe.x = WIDTH
+        top_pipe.midleft = (WIDTH, offset)
+    if bottom_pipe.x < -20:
+        #bottom_pipe.x = WIDTH
+        bottom_pipe.midleft = (WIDTH, offset + top_pipe.height + 200)
+
+    if (bird.colliderect(top_pipe)) or (bird.colliderect(bottom_pipe)):
+        hit_pipe()
+    if bird_y <= 0 :
         game_over = True
 
+    if top_pipe.right < bird.x :
+        bird.score += 1
 
-def draw():
+
+def draw() :
+    global scroll_speed
     screen.clear()
-    
-    screen.fill((255,255,255))
-    screen.draw.filled_rect(
-        Rect(
-            (0,0),
-            (500, 500)
-            ),
-            color=(35, 92, 118)
-        )
+    screen.fill((255, 255, 255))
+    screen.blit('background', (0, 0))
+    top_pipe.draw()
+    bottom_pipe.draw()
     bird.draw()
     bird.y = bird_y
-    if bird_y >= 500:
-        screen.draw.text("GAME OVER", center=(250, 250), fontsize=32)
-    
-def draw_pipe(pipe_x, pipe_space_y):
-    screen.draw.filled_rect(
-        Rect(
-            (pipe_x, 0),
-            (pipe_width, pipe_space_y)
-            ),
-            color=(94, 201, 72)
-        )
-
-    screen.draw.filled_rect(
-        Rect(
-            (pipe_x, pipe_space_y + pipe_space_height),
-                (pipe_width, playing_area_height - pipe_space_y - pipe_space_height)
-            ),
-            color=(94, 201, 72)
-        )
-
-draw_pipe(pipe_1_x, pipe_1_space_y)
-draw_pipe(pipe_2_x, pipe_2_space_y)
+    if bird_y >= 500 :
+        screen.draw.text("GAME OVER", center=(200, 300), fontsize=32, color='orange')
+        scroll_speed = 1
+    elif bird_y > HEIGHT :
+        reset()
+    screen.draw.text(
+        str(bird.score),
+        color='white',
+        midtop=(20, 10),
+        fontsize=70,
+    )
 
 
-def on_key_down():
-    if bird_y >= 500:
-        pass
+def on_key_down() :
+    if (bird.alive):
+        if bird_y >= 500:
+            pass
+        else :
+            global bird_y_speed
+            if bird_y > 0 :
+                bird_y_speed = -165
     else:
-        global bird_y_speed
-        if bird_y > 0:
-            bird_y_speed = -165
+        screen.draw.text("GAME OVER", center=(200, 300), fontsize=32, color='orange')
 
+
+def reset() :
+    global bird_y_speed
+    bird_y_speed = 1
+    bird.center = (75, 350)
+    top_pipe.center = (300, 0)
+    bottom_pipe.center = (300, top_pipe.height + gap)
+    bird.alive = True
+    top_pipe.pair_number = 1
+
+def hit_pipe():
+    screen.draw.text("GAME OVER", center=(200, 300), fontsize=32, color='orange')
+    bird.alive = False
+
+bird.score = 0
+
+reset()
 pg.go()
