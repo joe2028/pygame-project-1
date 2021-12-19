@@ -3,9 +3,11 @@ import os
 import time
 from random import *
 
+
+
 TITLE = 'Mutated Flappy Bird'
 
-egg = Actor('rene', (20, 5))
+egg = Actor('rene', center=(200, 400))
 gap = 140
 bird = Actor('bird', (75, 350))
 WIDTH = 400
@@ -34,7 +36,6 @@ def update(dt):
     scroll_speed = -2
     top_pipe.x += scroll_speed
     bottom_pipe.x += scroll_speed
-
     offset = randint(-150, 200)
 
     if top_pipe.x < -20:
@@ -48,9 +49,10 @@ def update(dt):
         hit_pipe()
     if bird_y <= 0 :
         game_over = True
+    if bird.alive:
+        if top_pipe.right < bird.x :
+            bird.score += 1
 
-    if top_pipe.right < bird.x :
-        bird.score += 1
 
 
 def draw() :
@@ -63,8 +65,10 @@ def draw() :
     bird.draw()
     bird.y = bird_y
     if bird_y >= 500 :
-        screen.draw.text("GAME OVER", center=(200, 300), fontsize=32, color='orange')
+        screen.draw.text("GAME OVER", center=(200, 300), fontsize=60, owidth=1.5, ocolor=(0, 0, 0), color='orange')
         scroll_speed = 1
+        sounds.damndaniel.play()
+        egg.draw()
     elif bird_y > HEIGHT :
         reset()
     screen.draw.text(
@@ -72,6 +76,8 @@ def draw() :
         color='white',
         midtop=(20, 10),
         fontsize=70,
+        owidth=1.5,
+        ocolor='black'
     )
 
 
@@ -84,7 +90,7 @@ def on_key_down() :
             if bird_y > 0 :
                 bird_y_speed = -165
     else:
-        screen.draw.text("GAME OVER", center=(200, 300), fontsize=32, color='orange')
+        screen.draw.text("GAME OVER", center=(200, 300), fontsize=60, owidth=40, ocolor=(0, 0, 255), color='orange')
 
 
 def reset() :
@@ -97,7 +103,7 @@ def reset() :
     top_pipe.pair_number = 1
 
 def hit_pipe():
-    screen.draw.text("GAME OVER", center=(200, 300), fontsize=32, color='orange')
+    screen.draw.text("GAME OVER", center=(200, 300), fontsize=60, owidth=40, ocolor=(0,0,255), color='orange')
     bird.alive = False
 
 bird.score = 0
